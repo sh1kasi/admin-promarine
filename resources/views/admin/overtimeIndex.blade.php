@@ -10,6 +10,7 @@
 </style> --}}
 
 @include('admin.modal.inputOvertime')
+@include('admin.modal.editOvertime')
 
 <div class="page-content">
     <div class="main-wrapper">
@@ -37,6 +38,32 @@
 </div>
 
 <script>
+
+function deleteOvertime(id) {
+    // alert('a');
+
+        // var id = $(this).data('id');
+            // console.log(id);
+            var name = $(this).data('name');
+            swal({
+               title: "Kamu yakin?",
+               text: "Lemburan ini akan terhapus!",
+               icon: "warning",
+               buttons: true,
+               dangerMode: true,
+               })
+               .then((willDelete) => {
+               if (willDelete) {
+                   window.location = "/lemburan/delete/"+id+""
+                   swal("Lemburan tersebut berhasil terhapus" , {
+                   icon: "success",
+                   buttons: false,
+                   });
+                   
+               }
+           });
+    }
+
     $(document).ready(function () {
         $("#employeeTable").DataTable({
             processing: true,

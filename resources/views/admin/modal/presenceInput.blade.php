@@ -1,3 +1,5 @@
+@if (auth()->user()->role != 'admin')
+    
 @if ($employee == !null)
 <form action="/kehadiran/store" method="POST">
     @csrf
@@ -24,8 +26,8 @@
                     <div class="row pt-1 pb-3" style="border-bottom: 1px solid #c5bebefa;">
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-check-label" style="font-size: 15px" for="area">Pilih Area Kerja Hari ini</label>
-                            <select class="form-select @error('area') is-invalid @enderror" style="width: 190%;" id="area"
-                                name="area" aria-label="Default select example">
+                            <select class="form-select @error('area') is-invalid @enderror" id="area"
+                            name="area" aria-label="Default select example">
                                 <option selected value="">Pilih Area Kerja</option>
                                 <option value="1" {{ @old('area') == 1 ? 'selected' : '' }}>Area Gerbang Kertasusila</option>
                                 <option value="2" {{ @old('area') == 2 ? 'selected' : '' }}>Area Pulau Jawa selain Gerbang Kertasusila</option>
@@ -36,9 +38,9 @@
                                 <div class="invalid-feedback">
                                   {{ $message }}
                                 </div>
-                            @enderror
-                            <input type="hidden" name="employee_id" value="{{ $employee->id }}">
-                        </div>
+                                @enderror
+                                <input type="hidden" name="employee_id" value="{{ $employee->id }}">
+                            </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -51,20 +53,22 @@
     </div>
 </form>
 @else
-<script>
-    $(document).ready(function () {
-        swal({
-            title: "Kesalahan!",
-            icon: "error",
-            text: "Akun anda belum terdaftar sebagai pegawai, mohon hubungi admin",
-            showConfirmButton: false,
-        }).then(function () {
-            window.location = "/home";
+    <script>
+        $(document).ready(function () {
+            swal({
+                title: "Kesalahan!",
+                icon: "error",
+                text: "Akun anda belum terdaftar sebagai pegawai, mohon hubungi admin",
+                showConfirmButton: false,
+            }).then(function () {
+                window.location = "/home";
+            });
         });
-    });
-
-</script>
+        
+    </script>
 @endif
+@endif
+
 
 
 

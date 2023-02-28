@@ -9,23 +9,48 @@ use Illuminate\Support\Carbon;
 use Illuminate\Routing\Controller;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Stevebauman\Location\Facades\Location;
+use Torann\GeoIP\Facades\GeoIP;
+use Alkoumi\LaravelHijriDate\Hijri;
+
 
 class PresenceController extends Controller
 {
     public function index(Request $request)
     {
-        $employee = Employee::where('user_id', auth()->user()->id)->first();
-        // dd($employee);
-        $currentDate = Carbon::now()->format('Y-m-d');
+        $now = Carbon::now();
+        $currentDate = $now->format('Y-m-d');
+        
+        if (auth()->user()->role === 'user') {
+            $employee = Employee::where('user_id', auth()->user()->id)->first();
+            if ($employee != null) {
+                $presence = Presence::where('employee_id', $employee->id)->where('date', $currentDate)->first();
+            } else { 
+                $presence = Presence::first();
+            }
+        } else {
+            $employee = Employee::first();
+            $presence = Presence::first();
+        }
+        // dd($presence);
+        
 
         
-        return view('admin.presenceIndex', compact('employee', 'currentDate'));
+        return view('admin.presenceIndex', compact('employee', 'currentDate', 'now', 'presence'));
     }
 
     public function data(Request $request)
     {
-        $employeee = Employee::get();
-        $presence = Presence::groupBy('date')->get();
+        if (auth()->user()->role === 'admin') {
+            $employeee = Employee::get();
+            $presence = Presence::groupBy('date')->get();
+        } else {
+            $employee = Employee::where('user_id', auth()->user()->id)->first();
+            if ($employee != null) {
+                $presence = Presence::where('employee_id', $employee->id)->get();
+            } else {
+                $presence = Presence::get();
+            }
+        }
         // dd($presence);
 
         return DataTables($presence)
@@ -34,7 +59,11 @@ class PresenceController extends Controller
         })
         ->addColumn('action', function ($row) {
             $date = $row->created_at->format('Y-m-d');
-            return '<button class="text-primary btn-primary btn" type="button" onclick="presenceDetail('."'".$row->date."'".', '."'".$date."'".')" id="presenceDetail data-bs-toggle="modal" data-bs-target="#presenceDetail">Cek Absen</button>';
+            if (auth()->user()->role === 'admin') {
+                return '<button class="text-primary btn-primary btn" type="button" onclick="presenceDetail('."'".$row->date."'".', '."'".$date."'".')" id="presenceDetail data-bs-toggle="modal" data-bs-target="#presenceDetail">Cek Absen</button>';
+            } else {
+                return '<h4><span class="badge alert-success">Hadir</span></h4>';
+            }
         })
         ->addIndexColumn()
         ->make(true);
@@ -51,19 +80,24 @@ class PresenceController extends Controller
             'area.required' => 'Area wajib diisi!',
         ]);
 
+
     // Pengambilan API tanggal merah dan API tahun hijriyah
         $liburan = file_get_contents("https://api-harilibur.vercel.app/api");
         $hari_libur = json_decode($liburan, true);
 
-        $ki = file_get_contents("http://api.aladhan.com/v1/gToH");
-        $kalender_islam = json_decode($ki, true);
-        $hijriyah = $kalender_islam['data']['hijri']['year'];
+        // $ki = file_get_contents("http://api.aladhan.com/v1/gToH");
+        // $kalender_islam = json_decode($ki, true);
+        // $hijriyah = $kalender_islam['data']['hijri']['year'];
+        $hijriyah = Hijri::date('Y');
     // Akhir pengambilan API tanggal merah dan API tahun hijriyah    
 
         $checkDate = Carbon::parse($request->tanggal)->format('Y-m-j');
         $today = Carbon::now()->format('D');
         
         $employee = Employee::find($request->employee_id);
+        // dd($request->employee_id);
+
+
         
     // Mengubah metode gaji menjadi harian    
         $gaji_harian = 0;
@@ -142,6 +176,8 @@ class PresenceController extends Controller
     } else {
         $salary *= 3;
     }
+
+
 
             $presence = new Presence;
             $presence->employee_id = $request->employee_id;

@@ -12,21 +12,23 @@
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div class="card-body table-responsive">
+                    <div class="card-body">
                         <h5 class="card-title">Pegawai</h5>
                         <button class="btn btn-primary mb-3" id="employeeTable_wrapper" data-bs-toggle="modal" data-bs-target="#inputEmployee">Tambah</button>
-                        <table id="employeeTable" class="display table table-bordered" style="width: 100%">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nama Pegawai</th>
-                                    <th>Jabatan</th>
-                                    <th>Metode Gajian</th>
-                                    <th>Nominal Gajian</th>
-                                    <th>Aksi</th>
-                            </tr>
-                            </thead>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="employeeTable" class="display table table-bordered" style="width: 100%">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nama Pegawai</th>
+                                        <th>Jabatan</th>
+                                        <th>Metode Gajian</th>
+                                        <th>Nominal Gajian</th>
+                                        <th>Aksi</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>      
             </div>
@@ -40,13 +42,68 @@
     </script>
 @endif
 
-@if ($errors->any())
-    <script>
-        $(document).ready(function () {
-            $('#inputEmployee').modal('show');
-        });
-    </script>
-@endif
+
+<script>
+
+    function deleteEmployee(id) {
+    // alert('a');
+
+        // var id = $(this).data('id');
+            // console.log(id);
+            var name = $(this).data('name');
+            swal({
+               title: "Kamu yakin?",
+               text: "Pegawai ini akan terhapus!",
+               icon: "warning",
+               buttons: true,
+               dangerMode: true,
+               })
+               .then((willDelete) => {
+               if (willDelete) {
+                   window.location = "/pegawai/delete/"+id+""
+                   swal("Pegawai tersebut berhasil terhapus" , {
+                   icon: "success",
+                   buttons: false,
+                   });
+                   
+               }
+           });
+    }
+
+    // $(document).ready(function () {
+        
+        
+    //     $(".delete_employee").click(function (e) { 
+    //         e.preventDefault();
+
+    //         alert('a');
+            
+    //         var id = $(this).data('id');
+    //         // console.log(id);
+    //         var name = $(this).data('name');
+    //         swal({
+    //            title: "Kamu yakin?",
+    //            text: "Pegawai yang bernama " +name+" akan terhapus!",
+    //            icon: "warning",
+    //            buttons: true,
+    //            dangerMode: true,
+    //            })
+    //            .then((willDelete) => {
+    //            if (willDelete) {
+    //                window.location = "/pegawai/delete/"+id+""
+    //                swal("Pegawai bernama "+name+" berhasil terhapus" , {
+    //                icon: "success",
+    //                buttons: false,
+    //                });
+                   
+    //            }
+    //        });
+
+    //     });
+
+    // });
+
+</script>
 
 <script>
     $(document).ready(function () {

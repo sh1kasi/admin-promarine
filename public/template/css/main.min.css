@@ -1007,9 +1007,9 @@ body.sidebar-hidden .page-content {
     margin-left: 0
 }
 
-body.sidebar-hidden .main-wrapper {
-    padding-left: 0
-}
+/* body.sidebar-hidden .main-wrapper {
+    padding-left: 
+} */
 
 .popover {
     margin: 20px;
@@ -3113,6 +3113,11 @@ ul.profile-about-list li.profile-about-list-buttons {
 .no-loader .loader {
     visibility: hidden;
     opacity: 0
+}
+
+.detail_employee {
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(12,59,125,1) 50%, rgba(23,123,221,1) 100%);
 }
 
 @media (max-width:1350px) {

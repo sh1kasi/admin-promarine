@@ -25,7 +25,7 @@
                         <select class="form-select @error('lemburan') is-invalid @enderror" aria-label="Default select example" name="lemburan">
                             <option selected value="">Pilih Lemburan yang Tersedia</option>
                             @foreach ($overtime as $lembur)
-                            <option value="{{ $lembur->id }}">{{ $lembur->name }} - (@currency($lembur->per_hour)/jam)
+                            <option {{ @old('lemburan') == $lembur->id ? 'selected' : '' }} value="{{ $lembur->id }}">{{ $lembur->name }} - (@currency($lembur->per_hour)/jam)
                             </option>
                             @endforeach
                         </select>
@@ -38,7 +38,7 @@
                     <div class="row mt-3">
                         <div class="form-group col-md-6">
                             <p style="width: 155px; font-size: 12px">Dari Jam: </p>
-                            <input type="text" name="from_time" class="form-control datetimepicker-input @error('from_time') is-invalid @enderror" id="datetimepicker1" data-toggle="datetimepicker" data-target="#datetimepicker1"/>
+                            <input type="text" name="from_time" value="{{ @old('from_time') }}" class="form-control datetimepicker-input @error('from_time') is-invalid @enderror" id="datetimepicker1" data-toggle="datetimepicker" data-target="#datetimepicker1"/>
                             @error('from_time')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -47,7 +47,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <p style="width: 155px; font-size: 12px">Hingga Jam: </p>
-                            <input type="text" name="to_time" class="form-control datetimepicker-input @error('to_time') is-invalid @enderror" id="datetimepicker2" data-toggle="datetimepicker" data-target="#datetimepicker2"/>
+                            <input type="text" name="to_time" value="{{ @old('to_time') }}" class="form-control datetimepicker-input @error('to_time') is-invalid @enderror" id="datetimepicker2" data-toggle="datetimepicker" data-target="#datetimepicker2"/>
                             @error('to_time')
                                 <div class="invalid-feedback">
                                     {{ $message }}

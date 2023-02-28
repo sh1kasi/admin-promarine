@@ -9,19 +9,21 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table id="presenceDetailTable" class=" display table table-bordered table-responsive" style="width: 100%">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>Nama</th>
-                            <th>Area</th>
-                            <th>Jam Absen</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="presenceDetailTableBody" style="text-align: center">
-
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="presenceDetailTable" class=" display table table-bordered table-responsive" style="width: 100%">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Area</th>
+                                <th>Jam Absen</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presenceDetailTableBody" style="text-align: center">
+                            
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>

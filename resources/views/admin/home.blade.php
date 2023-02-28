@@ -61,15 +61,19 @@
     </div>
 </div>
 
+@if (Session::get('success'))
+    <script>
+        toastr.success("{!! session('success') !!}");
+    </script>
+@endif
+
     
 <script>
     $(document).ready(function () {
 
-        // Link
 
-
-        $(".page-sidebar").addClass('d-none');
         $("#sidebar-toggle").addClass('d-none');
+        $(".page-sidebar").addClass('d-none');
         $(".page-content").css('margin-left', '0');
     });
 </script>

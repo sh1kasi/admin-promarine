@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use Validator;
 use Carbon\Carbon;
 use App\Models\User;
 use Grei\TanggalMerah;
 use App\Models\Employee;
+use App\Models\Presence;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Employee_overtime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Validator;
+
 
 class EmployeeController extends Controller
 {
@@ -40,8 +44,9 @@ class EmployeeController extends Controller
             return ucfirst($row->users->name);
         })
         ->addColumn('action', function ($row) {
-            return '<button class="text-primary btn-primary btn" type="button" data-bs-toggle="modal" data-bs-target="#employeeDetail" onclick="employeeDetail('.$row->id.')" id="employeeDetail">Detail</button>
-                    <button class="btn-warning btn" type="button" data-bs-toggle="modal" data-bs-target="#employeeEdit" onclick="employeeEdit('.$row->id.')" id="employeeEdit">Edit</button>';
+            return '<a class="btn btn-primary" type="button" href="/pegawai/detail/'.$row->id.'" id="employeeDetail"><i class="fa fa-xl fa-circle-info"></i></a>
+                    <button class="btn-warning btn" type="button" data-bs-toggle="modal" data-bs-target="#employeeEdit" onclick="employeeEdit('.$row->id.')" id="employeeEdit"><i class="fas fa-edit"></i></button>
+                    <a class="btn-danger btn delete_employee" href="#" type="button"  data-name="'.ucfirst($row->users->name).'" id="delete" data-id="' . $row->id . '" onclick="deleteEmployee(' . $row->id . ')"><i class="fas fa-trash"></i></a>';
         })
         ->addIndexColumn()
         ->make(true); 
@@ -101,6 +106,64 @@ class EmployeeController extends Controller
         $employee->save();
 
         return back()->with('success', 'Berhasil Mengedit Pegawai!');
+    }
+
+    public function delete($id)
+    {
+        // dd($id);
+        $employee = Employee::find($id);
+        
+        $employee->delete();
+        return back()->with('success', 'Berhasil Mengedit Pegawai!');   
+
+    }
+
+    public function employee_detail($id)
+    {
+        $employee = Employee::find($id);
+
+        return view('admin.employeeDetailIndex', compact('employee', 'id'));
+    }
+    
+    public function data_detail(Request $request, $id)
+    {
+        // $id = $id;
+        function rp($angka)
+        {
+            $hasil_rupiah = "Rp " . number_format($angka,0,',','.');
+            return $hasil_rupiah;
+        }
+
+
+        $presence = Presence::where('employee_id', $id)->get();
+        $employee = Employee::find($id);
+        return DataTables($presence)
+        ->addColumn('area', function ($row) {
+            if ($row->status == 1) {
+                return "Area Gerbang Kertasusila";
+            } elseif ($row->status == 2) {
+                return "Area Pulau Jawa selain Gerbang Kertasusila";
+            } elseif ($row->status == 3) {
+                return "Area Luar Pulau Jawa selain Bangkalan";
+            } elseif ($row->status == 4) {
+                return "Offshore / Anchorage";
+            }
+        }) 
+        ->addColumn('overtime', function($row) {
+            $employee_overtime = Employee_overtime::where('date', $row->date)->where('employee_id', $row->employee_id)->first();
+            // dd($employee_overtime);
+            if (is_null($employee_overtime)) {
+                return "-";
+            } else {
+                return $employee_overtime->overtimes->name . ' (' . $employee_overtime->hour . ' Jam - ' . rp($employee_overtime->salary)  . ')';
+            }
+        }) 
+        ->addColumn('total_salary', function($employee) {
+            // $employee
+            return $employee->salary;
+        })
+        ->addIndexColumn()
+        ->make(true);
     }
 
 }

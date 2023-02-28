@@ -61,11 +61,6 @@
     </div>
 </div>
 
-@if (Session::get('success'))
-    <script>
-        toastr.success("{!! session('success') !!}");
-    </script>
-@endif
 
 <script>
     $(document).ready(function () {

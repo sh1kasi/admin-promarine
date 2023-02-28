@@ -52,13 +52,20 @@ Route::group(['middleware' => ['auth', 'cekLevel:admin']], function() {
     // Employee
     Route::get('/pegawai', [EmployeeController::class, 'index'])->name('employee.index');
     Route::get('/pegawai/json', [EmployeeController::class, 'data'])->name('employee.json');
+    Route::get('pegawai/detail/{id}', [EmployeeController::class, 'employee_detail'])->name('employee.detail');
+    Route::get('/pegawai/detail/json/{id}', [EmployeeController::class, 'data_detail'])->name('employee.json.detail');
     Route::post('/pegawai/store', [EmployeeController::class, 'store'])->name('employee.store');
     Route::post('/pegawai/update/{id}', [EmployeeController::class, 'update'])->name('employee.edit');
+    Route::get('/pegawai/delete/{id}', [EmployeeController::class, 'delete'])->name('employee.delete');
     
     
     // Overtime
     Route::get('/lemburan', [OvertimeController::class, 'index'])->name('overtime.index');
     Route::get('/lemburan/json', [OvertimeController::class, 'data'])->name('overtime.json');
+    Route::get('/lemburan/absen/admin/json', [OvertimeController::class, 'data_presence_admin'])->name('overtime.admin.json');
+    Route::get('/lemburan/detail/json', [OvertimeController::class, 'data_overtime_detail'])->name('overtime.detail.json');
+    Route::post('/lemburan/update/{id}', [OvertimeController::class, 'update'])->name('oovertime.update');
+    Route::get('/lemburan/delete/{id}', [OvertimeController::class, 'delete'])->name('overtime.delete');
 });
 
 

@@ -175,6 +175,9 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Stevebauman\Location\LocationServiceProvider::class,
+        Torann\GeoIP\GeoIPServiceProvider::class,
+        Alkoumi\LaravelHijriDate\LaravelHijriDateServiceProvider::class,
+
 
     ],
 
@@ -230,6 +233,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'GeoIP' => Torann\GeoIP\Facades\GeoIP::class,
+
 
     ],
 
