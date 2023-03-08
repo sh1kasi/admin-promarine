@@ -54,6 +54,7 @@ Route::group(['middleware' => ['auth', 'cekLevel:admin']], function() {
     Route::get('/pegawai/json', [EmployeeController::class, 'data'])->name('employee.json');
     Route::get('pegawai/detail/{id}', [EmployeeController::class, 'employee_detail'])->name('employee.detail');
     Route::get('/pegawai/detail/json/{id}', [EmployeeController::class, 'data_detail'])->name('employee.json.detail');
+    Route::get('/pegawai/cetak', [EmployeeController::class, 'employee_detail_pdf'])->name('employee.detail.pdf');
     Route::post('/pegawai/store', [EmployeeController::class, 'store'])->name('employee.store');
     Route::post('/pegawai/update/{id}', [EmployeeController::class, 'update'])->name('employee.edit');
     Route::get('/pegawai/delete/{id}', [EmployeeController::class, 'delete'])->name('employee.delete');

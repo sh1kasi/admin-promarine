@@ -37,15 +37,15 @@
                     </div>
                     <div class="row mt-3">
                         <div class="form-group col-md-6">
-                            <p style="width: 155px; font-size: 12px">Dari Jam: </p>
-                            <input type="text" name="from_time" value="{{ @old('from_time') }}" class="form-control datetimepicker-input @error('from_time') is-invalid @enderror" id="datetimepicker1" data-toggle="datetimepicker" data-target="#datetimepicker1"/>
+                            <p style="width: 155px; font-size: 12px">Jam Lembur</p>
+                            <input type="number" name="from_time" value="{{ @old('from_time') }}" class="form-control @error('from_time') is-invalid @enderror" placeholder="Masukkan Angka" id="datetimepicker1"/>
                             @error('from_time')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
                             @enderror
                         </div>
-                        <div class="form-group col-md-6">
+                        {{-- <div class="form-group col-md-6">
                             <p style="width: 155px; font-size: 12px">Hingga Jam: </p>
                             <input type="text" name="to_time" value="{{ @old('to_time') }}" class="form-control datetimepicker-input @error('to_time') is-invalid @enderror" id="datetimepicker2" data-toggle="datetimepicker" data-target="#datetimepicker2"/>
                             @error('to_time')
@@ -53,7 +53,7 @@
                                     {{ $message }}
                                 </div>
                             @enderror
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -67,12 +67,12 @@
 <script>
 
     $(document).ready(function () {
-        $("#datetimepicker1, #datetimepicker2").datetimepicker({
-            format: 'HH:mm',
-            pickDate: false,
-            pickSeconds: false,
-            pick12HourFormat: false,
-        });
+    //     $("#datetimepicker1, #datetimepicker2").datetimepicker({
+    //         format: 'HH:mm',
+    //         pickDate: false,
+    //         pickSeconds: false,
+    //         pick12HourFormat: false,
+    //     });
         $('.input-daterange').datepicker({
             todayBtn: 'linked',
             format: 'yyyy-mm-dd',

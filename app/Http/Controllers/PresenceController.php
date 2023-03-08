@@ -51,6 +51,19 @@ class PresenceController extends Controller
                 $presence = Presence::get();
             }
         }
+
+        if ($request->ajax()) {
+            if (!empty($request->from_date)) {
+                if ($request->from_date === $request->to_date) {
+                    $presence = Presence::whereDate('date', $request->from_date)->get();
+                } else {
+                    $presence = Presence::whereDate('date', '>=', $request->from_date)
+                                        ->whereDate('date', '<=', $request->to_date)->get();
+                }
+            } else {
+                $presence = Presence::all();
+            }
+        }
         // dd($presence);
 
         return DataTables($presence)
@@ -92,7 +105,8 @@ class PresenceController extends Controller
     // Akhir pengambilan API tanggal merah dan API tahun hijriyah    
 
         $checkDate = Carbon::parse($request->tanggal)->format('Y-m-j');
-        $today = Carbon::now()->format('D');
+        $today = Carbon::parse($request->tanggal)->format('D');
+        // dd($today);
         
         $employee = Employee::find($request->employee_id);
         // dd($request->employee_id);
@@ -127,9 +141,9 @@ class PresenceController extends Controller
         $tanggal_adha = $libur_nasional[$found_key_adha];
         $tanggal_fitri = $libur_nasional[$found_key_fitri+1];
 
-        if (in_array($today, $tanggal_fitri)) {
+        if (in_array($checkDate, $tanggal_fitri)) {
             $hari_raya = true;
-        } elseif (in_array($today, $tanggal_adha)) {
+        } elseif (in_array($checkDate, $tanggal_adha)) {
             $hari_raya = true;
         } else {
             $hari_raya = false;
@@ -143,7 +157,7 @@ class PresenceController extends Controller
     // Pengecekan libur hari minggu dan hari besar
         if ($today === "Sun") {
             $hari_besar = true;
-        } elseif (in_array($today, $tanggal_merah)) {
+        } elseif (in_array($checkDate, $tanggal_merah)) {
             $hari_besar = true;
         } else {
             $hari_besar = false;

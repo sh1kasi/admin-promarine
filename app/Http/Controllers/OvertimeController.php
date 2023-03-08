@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Overtime;
+use App\Models\Presence;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Employee_overtime;
@@ -139,37 +140,31 @@ class OvertimeController extends Controller
             'tanggal' => 'required',
             'lemburan' => 'required',
             'from_time' => 'required',
-            'to_time' => 'required',
         ],[
             'tanggal.required' => 'Tanggal wajib diisi!',
             'lemburan.required' => 'Menu pilih lemburan wajib diisi!',
-            'from_time.required' => 'Kedua jam wajib diisi!',
-            'to_time.required' => 'Kedua jam wajib diisi!',
+            'from_time.required' => 'Jam lembur wajib diisi!',
         ]);
 
-        $startTime = Carbon::parse($request->from_time);
-        $finishTime = carbon::parse($request->to_time);
-        $total_duration = $finishTime->diffInHours($startTime);
-        $today = Carbon::now()->format('D');
+        // $startTime = Carbon::parse($request->from_time);
+        // $finishTime = carbon::parse($request->to_time);
+        $total_duration = $request->from_time;
+        $checkDate = Carbon::parse($request->tanggal)->format('Y-m-j');
+        $today = Carbon::parse($request->tanggal)->format('D');
+        // dd(Carbon::parse($request->tanggal));
 
-        // dd($startTime);
-
-        // if (strtotime($request->from_time) < strtotime("15:30")) {
-        //     dd('gorong wayahe su');
-        // } else {
-        //     dd('if e ga mlaku');
-        // }
-
-        $employee = Employee::where('user_id', auth()->user()->id)->first();
-        $overtime = Overtime::find($request->lemburan);
-        // dd($overtime);
-
+            $employee = Employee::where('user_id', auth()->user()->id)->first();
+            $presence = Presence::where('employee_id', $employee->id)->whereDate('created_at', $request->tanggal)->first();
+            $overtime = Overtime::find($request->lemburan);
+        
+            
         // Pengecekan apakah jam lembur lebih dari 5 jam
-                $extra_duration = 0;
+        $extra_duration = 0;
             if ($total_duration > 5) {
                 $extra_duration = $total_duration - 5;
                 $total_duration -= $extra_duration;
             }
+            // dd($extra_duration);
         // Akhir pengecekan jam lembur
 
         // dd($extra_duration + $total_duration);
@@ -200,9 +195,9 @@ class OvertimeController extends Controller
             $tanggal_adha = $libur_nasional[$found_key_adha];
             $tanggal_fitri = $libur_nasional[$found_key_fitri+1];
 
-            if (in_array($today, $tanggal_fitri)) {
+            if (in_array($checkDate, $tanggal_fitri)) {
                 $hari_raya = true;
-            } elseif (in_array($today, $tanggal_adha)) {
+            } elseif (in_array($checkDate, $tanggal_adha)) {
                 $hari_raya = true;
             } else {
                 $hari_raya = false;
@@ -212,7 +207,7 @@ class OvertimeController extends Controller
         // Pengecekan libur hari minggu dan hari besar
              if ($today === "Sun") {
                 $hari_besar = true;
-            } elseif (in_array($today, $tanggal_merah)) {
+            } elseif (in_array($checkDate, $tanggal_merah)) {
                 $hari_besar = true;
             } else {
                 $hari_besar = false;
@@ -222,6 +217,8 @@ class OvertimeController extends Controller
         $check = $employee->overtimes()->where('date' , $request->tanggal)->where('employee_id', $employee->id)->get();
         if (count($check) > 0) {
             return redirect('/lemburan/absen')->with('failed', 'Anda sudah melakukan absen lemburan hari ini');
+        } elseif (!$presence) {
+            return redirect('/lemburan/absen')->with('failed', 'Anda harus melakukan absen hadir sebelum melakukan absen lembur!');
         }
 
         $salary = 0;
@@ -251,6 +248,8 @@ class OvertimeController extends Controller
             $salary += $bonus_hariRaya * $total_duration;
         } 
 
+        // dd($salary);
+
         $employee->overtimes()->attach($request->lemburan, ['date' => $request->tanggal, 'hour' => $extra_duration + $total_duration, 'salary' => $salary]);
 
         return redirect('/lemburan/absen')->with('success', 'Anda berhasil mengisi absen lemburan hari ini');
@@ -274,7 +273,21 @@ class OvertimeController extends Controller
     public function data_presence_admin(Request $request)
     {
         $employee = Employee::get();
-        $employee_overtime = Employee_overtime::groupBy('date')->get();
+        // $employee_overtime = Employee_overtime::groupBy('date')->get();
+
+        if ($request->ajax()) {
+            if (!empty($request->from_date)) {
+                if ($request->from_date === $request->to_date) {
+                    $employee_overtime = Employee_overtime::whereDate('date', $request->from_date)->groupBy('date')->get();
+                } else {
+                    $employee_overtime = Employee_overtime::whereDate('date', '>=', $request->from_date)
+                                                          ->whereDate('date', '<=', $request->to_date)->groupBy('date')->get();
+                }
+            } else {
+                $employee_overtime = Employee_overtime::groupBy('date')->get();
+            }
+        }
+
 
         return DataTables($employee_overtime)
         ->addColumn('tanggal', function($row) {
