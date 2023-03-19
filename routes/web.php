@@ -6,6 +6,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KasbonController;
 use App\Http\Controllers\LoginController;
 
 /*
@@ -45,6 +46,14 @@ Route::group(['middleware' => ['auth']], function() {
      Route::get('/lemburan/absen/json', [OvertimeController::class, 'presence_data'])->name('overtime.presence.json');
 });
 
+Route::group(['middleware' => ['auth', 'cekLevel:user']], function() {
+    // Kasbon
+    Route::get('/kasbon', [KasbonController::class, 'user_index'])->name('kasbon.user.index');
+    Route::get('/kasbon/user/json', [KasbonController::class, 'user_data'])->name('kasbon.user.json');
+    Route::post('/kasbon/user/post', [KasbonController::class, 'store'])->name('kasbon.store');
+
+});
+
 Route::group(['middleware' => ['auth', 'cekLevel:admin']], function() {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -67,6 +76,12 @@ Route::group(['middleware' => ['auth', 'cekLevel:admin']], function() {
     Route::get('/lemburan/detail/json', [OvertimeController::class, 'data_overtime_detail'])->name('overtime.detail.json');
     Route::post('/lemburan/update/{id}', [OvertimeController::class, 'update'])->name('oovertime.update');
     Route::get('/lemburan/delete/{id}', [OvertimeController::class, 'delete'])->name('overtime.delete');
+
+    // Kasbon
+    Route::get('/kasbon/admin', [KasbonController::class, 'index'])->name('kasbon.admin.index');
+    Route::get('/kasbon/admin/json', [KasbonController::class, 'data'])->name('kasbon.admin.json');
+    Route::post('/kasbon/complete/{id}', [KasbonController::class, 'complete'])->name('kasbon.complete');
+    Route::post('/kasbon/reject/{id}', [KasbonController::class, 'reject'])->name('kasbon.reject');
 });
 
 

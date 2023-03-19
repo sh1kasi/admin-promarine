@@ -156,13 +156,13 @@ class EmployeeController extends Controller
         $employee = Employee::find($id);
         return DataTables($presence)
         ->addColumn('area', function ($row) {
-            if ($row->status == 1) {
+            if ($row->area == 1) {
                 return "Area Gerbang Kertasusila";
-            } elseif ($row->status == 2) {
+            } elseif ($row->area == 2) {
                 return "Area Pulau Jawa selain Gerbang Kertasusila";
-            } elseif ($row->status == 3) {
+            } elseif ($row->area == 3) {
                 return "Area Luar Pulau Jawa selain Bangkalan";
-            } elseif ($row->status == 4) {
+            } elseif ($row->area == 4) {
                 return "Offshore / Anchorage";
             }
         }) 

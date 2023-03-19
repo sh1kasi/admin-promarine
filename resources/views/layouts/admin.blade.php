@@ -191,12 +191,12 @@
                   <li class="sidebar-title">
                     Pegawai
                   </li>
-                  <li class="mt-3 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'employee.index')
+                  <li class="mt-1 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'employee.index')
                     active-page
                   @endif">
                     <a href="{{ route('employee.index') }}"><i data-feather="users"></i>Pegawai</a>
                   </li>
-                  <li class="mt-3 @if (Route::current()->getName() == 'presence.index')
+                  <li class="mt-1 @if (Route::current()->getName() == 'presence.index')
                     active-page
                   @endif">
                     <a href="{{ route('presence.index') }}"><i data-feather="check-square"></i>Absen Kehadiran</a>
@@ -204,16 +204,32 @@
                   <li class="sidebar-title">
                     Lembur
                   </li>
-                  <li class="mt-3 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'overtime.index')
+                  <li class="mt-1 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'overtime.index')
                     active-page
                     @endif">
                     <a href="{{ route('overtime.index') }}"><i data-feather="clock"></i>Lemburan</a>
                   </li>
-                  <li class="mt-3 @if (Route::current()->getName() == 'overtime.presence')
+                  <li class="mt-1 @if (Route::current()->getName() == 'overtime.presence')
                     active-page
                   @endif">
                     <a href="{{ route('overtime.presence') }}"><i data-feather="check-circle"></i>Absen Lemburan</a>
                   </li>
+                  <li class="sidebar-title">
+                    Kasbon
+                  </li>
+                  @if (auth()->user()->role === 'admin')
+                    <li class="mt-1 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'kasbon.admin.index')
+                      active-page
+                    @endif">
+                      <a href="{{ route('kasbon.admin.index') }}"><i data-feather="dollar-sign"></i>Kasbon Pegawai</a>
+                    </li>
+                  @else
+                    <li class="mt-1 {{ auth()->user()->role == 'admin' ? 'd-none' : '' }} @if (Route::current()->getName() == 'kasbon.user.index')
+                      active-page
+                    @endif">
+                      <a href="{{ route('kasbon.user.index') }}"><i data-feather="dollar-sign"></i>Kasbon</a>
+                    </li>
+                  @endif
                 </ul>
             </div>        
             </div>
