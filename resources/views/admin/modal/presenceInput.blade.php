@@ -1,7 +1,7 @@
 @if (auth()->user()->role != 'admin')
     
 @if ($employee == !null)
-<form action="/kehadiran/store" method="POST">
+<form action="/kehadiran/store" method="POST" id="presenceForm">
     @csrf
     <div class="modal fade" id="inputPresence" tabindex="-1" role="dialog" aria-labelledby="inputPresenceLabel"
         aria-hidden="true">
@@ -16,7 +16,7 @@
                 <div class="modal-body">
                     <div class="form-group pb-1 input-daterange date">
                         <label for="exampleInputEmail1">Tanggal</label> <br>
-                        <input style="width: 45%;" value="{{ $currentDate }}" class="form-control @error('tanggal') is-invalid @enderror form-input mt-2 mb-2" id="tanggal" style="text-transform: uppercase;" aria-describedby="emailHelp" name="tanggal" />
+                        <input style="width: 45%;" value="{{ $currentDate }}" class="form-control @error('tanggal') is-invalid @enderror form-input mt-2 mb-2 datepicker" id="tanggal" style="text-transform: uppercase;" aria-describedby="emailHelp" name="tanggal" />
                         @error('tanggal')    
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -24,10 +24,10 @@
                         @enderror
                     </div>
                     <div class="row pt-1 pb-3" style="border-bottom: 1px solid #c5bebefa;">
-                        <div class="form-group mt-3 col-md-6">
+                        <div class="form-group mt-3">
                             <label class="form-check-label" style="font-size: 15px" for="area">Pilih Area Kerja Hari ini</label>
                             <select class="form-select @error('area') is-invalid @enderror" id="area"
-                            name="area" aria-label="Default select example">
+                                name="area" aria-label="Default select example">
                                 <option selected value="">Pilih Area Kerja</option>
                                 <option value="1" {{ @old('area') == 1 ? 'selected' : '' }}>Area Gerbang Kertasusila</option>
                                 <option value="2" {{ @old('area') == 2 ? 'selected' : '' }}>Area Pulau Jawa selain Gerbang Kertasusila</option>
@@ -39,14 +39,12 @@
                                   {{ $message }}
                                 </div>
                                 @enderror
-                                <input type="hidden" name="employee_id" value="{{ $employee->id }}">
+                                <input type="hidden" name="employee_id" id="employee_id" value="{{ $employee->id }}">
                             </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success w-100">Hadir</button>
-                    {{-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button> --}}
-                    {{-- <button type="submit" class="btn btn-primary">Simpan</button> --}}
+                    <button type="submit" class="btn btn-success w-100 save" id="save">Hadir</button>
                 </div>
             </div>
         </div>
@@ -81,5 +79,15 @@
         });
 
     });
+
+    function editPresence(tgl, area, id) {
+        $(document).ready(function () {
+            $("#presenceForm").attr("action", '/kehadiran/update/'+id+'');
+            $("#tanggal").datepicker("setDate", `${tgl}`);
+            $(`#area option[value=${area}]`).attr('selected', 'selected');
+            $(".modal-title").html("Input Absen (Edit)");
+            $(".save").html("Simpan Edit");
+        });
+    }
 
 </script>

@@ -113,7 +113,9 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Tanggal</th>
+                                        <th class="">Area</th>
                                         <th>{{ auth()->user()->role === 'admin' ? 'Cek Kehadiran' : 'Status' }}</th>
+                                        <th class="{{ auth()->user()->role === "admin" ? 'd-none' : '' }}">Aksi</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -124,6 +126,8 @@
         </div>
     </div>
 </div>
+
+<input type="hidden" id="role" value="{{ auth()->user()->role }}">
 
 @if (Session::get('success'))
     <script>
@@ -174,13 +178,24 @@
             load_data();
         });
 
+        
+
+
         function load_data(from_date = '', to_date = '') {
+            var role = $("#role").val();
+
+            if (role === "admin") {
+                var isAdmin = false;
+            } else {
+                var isAdmin = true;
+            }
             $("#employeeTable").DataTable({
                 processing: true,
                 serverSide: true,
                 filter: true,
                 // responsive: true,
                 searching: true,
+                
                 ajax: {
                     type: "GET",
                     url: "/kehadiran/json",
@@ -190,10 +205,21 @@
                     }
                 },
                 columns: [
-                    {data: 'DT_RowIndex', name: '#'},
-                    {data: 'date', name: 'date'},
-                    {data: 'action', name: 'action'},
-                ]
+                            {data: 'DT_RowIndex', name: '#'},
+                            {data: 'date', name: 'date'},
+                            // if (role != "admin") {
+                                // }
+                                {data: 'area', name: 'area', visible: isAdmin},
+                                {data: 'action', name: 'action',},
+                            // if (role != "admin") {
+                                {data: 'action2', name: 'action2', visible: isAdmin},
+                            // }
+                        ],
+                // fnrow,              
+                // "columnDefs" : [
+                //     {'visible': false, 'targets' : [2]},
+                //     {'visible': false, 'targets' : [3]},
+                // ],
             });
         }
 

@@ -16,7 +16,6 @@
         <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,700,800&display=swap" rel="stylesheet">
         <link href="{{ asset('template') }}/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <link href="{{ asset('template') }}/plugins/font-awesome/css/all.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="{{ asset('template') }}/plugins/perfectscroll/perfect-scrollbar.css" rel="stylesheet">
 
       
@@ -43,71 +42,74 @@
                     <div class="card login-box-container">
                         <div class="card-body">
                             <div class="authent-logo">
-                                {{-- <img src="{{ asset('custom-image') }}/LOGO PROMARINE.jpg" class="image-fluid" alt=""> --}}
-                                d
+                                <img src="{{ asset('template') }}/images/logo@2x.png" alt="">
                             </div>
                             <div class="authent-text">
-                                <p>Selamat Datang di Admin Promarine</p>
-                                <p>Silakan Masuk ke akun anda.</p>
+                                <p>Welcome to Circl</p>
+                                <p>Enter your details to create your account</p>
                             </div>
 
-                            <form method="post" action="/login/store">
+                            <form action="/register/post" method="post">
                                 @csrf
                                 <div class="mb-3">
                                     <div class="form-floating">
-                                        <input type="text" name="name" class="form-control" id="floatingInput" placeholder="name@example.com">
+                                        <input type="text" name="name" class="form-control @error('username') is-invalid @enderror " id="floatingInput" placeholder="Fullname">
                                         <label for="floatingInput">Username</label>
+                                        @error('username')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
                                       </div>
-                                      @error('name')
-                                      <div class="text-danger mt-2">
-                                        {{ $message }}
+                                </div>
+                                {{-- <div class="mb-3">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" id="floatingInput1" placeholder="name@example.com">
+                                        <label for="floatingInput">Email address</label>
                                       </div>
-                                      @enderror
+                                </div> --}}
+                                <div class="mb-3">
+                                    <div class="form-floating">
+                                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="floatingPassword" placeholder="Password">
+                                        <label for="floatingPassword">Password</label>
+                                        @error('password')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                      </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="form-floating">
-                                        <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">Password</label>
+                                        <input type="password" name="password_confirm" class="form-control @error('password_confirm') is-invalid @enderror" id="floatingPassword1" placeholder="Confirm Password">
+                                        <label for="floatingPassword">Konfimasi Password</label>
+                                        @error('password_confirm')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
                                       </div>
-                                      @error('password')
-                                      <div class="text-danger mt-2">
-                                        {{ $message }}
-                                      </div>
-                                      @enderror
                                 </div>
                                 <div class="d-grid">
-                                    <button type="submit" class="btn btn-info m-b-xs">Masuk</button>
+                                    <button type="submit" class="btn btn-primary m-b-xs">Register</button>
                                 </div>
                               </form>
                               <div class="authent-login">
-                                <p>Belum memiliki akun? <a href="/register">Daftar</a></p>
-                            </div>
+                                  <p>Sudah memiliki akun? <a href="/login">Masuk</a></p>
+                              </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+         
         
         <!-- Javascripts -->
         <script src="{{ asset('template') }}/plugins/jquery/jquery-3.4.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="{{ asset('template') }}/plugins/bootstrap/js/bootstrap.min.js"></script>
         <script src="https://unpkg.com/feather-icons"></script>
         <script src="{{ asset('template') }}/plugins/perfectscroll/perfect-scrollbar.min.js"></script>
         <script src="{{ asset('template') }}/js/main.min.js"></script>
     </body>
-    @if (session()->has('failed'))
-    <script>
-     toastr.error("{!! session('failed') !!}", 'Peringatan!');
-    </script>
-    @endif
-    @if (session()->has('success'))
-    <script>
-     toastr.success("{!! session('success') !!}");
-    </script>
-    @endif
-
-
 </html>

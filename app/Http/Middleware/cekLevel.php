@@ -19,6 +19,6 @@ class cekLevel
         if (in_array($request->user()->role, $roles)) {
             return $next($request);
         }
-        return redirect('/pegawai');
+        return redirect('/home');
     }
 }

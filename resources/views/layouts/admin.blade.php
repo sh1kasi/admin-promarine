@@ -221,7 +221,7 @@
                     <li class="mt-1 {{ auth()->user()->role == 'user' ? 'd-none' : '' }} @if (Route::current()->getName() == 'kasbon.admin.index')
                       active-page
                     @endif">
-                      <a href="{{ route('kasbon.admin.index') }}"><i data-feather="dollar-sign"></i>Kasbon Pegawai</a>
+                      <a href="{{ route('kasbon.admin.index') }}"><i data-feather="dollar-sign"></i>Kasbon Pegawai &nbsp; <span class="badge" style="background-color: red; border-radius: 50%; padding: 5px 10px; top: -10px; right: -10px;" id="kasbon_count"></span></a>
                     </li>
                   @else
                     <li class="mt-1 {{ auth()->user()->role == 'admin' ? 'd-none' : '' }} @if (Route::current()->getName() == 'kasbon.user.index')
@@ -268,6 +268,28 @@
             event.preventDefault();
             document.getElementById('logout').submit();
           }
+
+          $(document).ready(function () {
+            $.ajaxSetup({
+              headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+              }
+            });
+            $.ajax({
+              type: "post",
+              url: "/kasbon-count",
+              dataType: "json",
+              success: function (response) {
+                if (response.count == 0) {
+                  $("#kasbon_count").addClass(response.count);
+                } else {
+                  $("#kasbon_count").append(response.count);
+                }
+              }
+            });
+          });
+          
+
         </script>
     </body>
 </html>

@@ -35,6 +35,15 @@
                     @enderror
                 </div>
                 <div class="form-group mt-3">
+                    <label for="call_name">Nama pegawai</label>
+                    <input type="text" id="call_name" name="call_name" value="{{ @old('call_name') }}" class="form-control @error('call_name') is-invalid @enderror w-75" placeholder="Masukkan Nama Pegawai"/>
+                @error('call_name')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                @enderror
+                </div>
+                <div class="form-group mt-3">
                     <label for="role">Pilih Role Pegawai</label>
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" aria-label="Default select example">
                         <option selected value="">Pilih role pegawai</option>

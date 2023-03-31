@@ -19,12 +19,7 @@
                                 <p class="alert alert-warning">
                                     - Jumlah nominal kasbon yang belum dibayar: 
                                     <b>
-                                        @php
-                                            $total_pending = 0;
-                                        @endphp
-                                        @foreach ($kasbon->where('status', 'pending') as $data)
-                                            @currency($total_pending += $data->nominal)
-                                        @endforeach 
+                                        @currency($total_pending) 
                                     </b>
                                 </p> 
                             </div>
@@ -33,7 +28,7 @@
                             </div>
                         </div>
                     </div>
-                </div>      
+                </div> 
             </div>
         </div>
     </div>
@@ -45,15 +40,18 @@
                 <div class="card">
                     <div class="card-body table-responsive">
                         <h5 class="card-title">Kasbon</h5>
-                        <button class="btn btn-primary mb-3" id="kasbonTable_wrapper" data-bs-toggle="modal" data-bs-target="#inputKasbonModal">Masukkan Kasbon</button>
+                        {{-- <button class="btn btn-primary mb-3" id="kasbonTable_wrapper" data-bs-toggle="modal" data-bs-target="#inputKasbonModal">Masukkan Kasbon</button> --}}
+                        <a class="btn btn-primary mb-3" id="kasbonTable_wrapper" href="/kasbon/input">Tambah Kasbon</a>
                         <table id="kasbonTable" class="display table table-bordered table-lemburan" style="width:100%;">
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>JOB</th>
                                     <th>Tanggal</th>
                                     <th>Nominal Kasbon</th>
-                                    <th>Deskripsi</th>
+                                    <th>Bukti Foto</th>
                                     <th>Status</th>
+                                    <th>Deskripsi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -63,6 +61,23 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="pengki" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Bukti Foto</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <img id="imageDetail" class="img-fluid" src="" alt="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 @if (Session::get('success'))
     <script>
@@ -83,10 +98,12 @@
             },
             columns: [
                 {data: 'DT_RowIndex', name: '#'},
+                {data: 'job', name: 'job'},
                 {data: 'date', name: 'date'},
                 {data: 'nominal', name: 'nominal', render: $.fn.dataTable.render.number( '.', ',', 0, 'Rp ' )},
-                {data: 'description', name: 'description'},
+                {data: 'foto', name: 'foto'},
                 {data: 'status', name: 'status'},
+                {data: 'description', name: 'description'},
             ],
             "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                 if (aData.status === 'Selesai') {
@@ -104,6 +121,18 @@
                 }
             }
         });
+
+
     });
+
+    function detailImage(photo) {
+        $("#imageDetail").attr('src', photo);
+        $("#pengki").modal('show');
+    }
+
+    function moreDetail(id) {
+        window.open(`/kasbon/cetak?kasbon_id=${id}`);
+    }
+
 </script>
 @endsection

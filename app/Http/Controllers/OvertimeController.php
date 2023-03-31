@@ -130,6 +130,10 @@ class OvertimeController extends Controller
         //   return  '<button class="text-primary btn-primary btn" type="button" data-bs-toggle="modal" data-bs-target="#overtimeDetail" onclick="overtimeDetail('.$row->id.')" id="overtimeDetail">Detail</button>';
             return rp($row->pivot->salary);
         })
+        ->addColumn('action', function($row) {
+        //   return  '<button class="text-primary btn-primary btn" type="button" data-bs-toggle="modal" data-bs-target="#overtimeDetail" onclick="overtimeDetail('.$row->id.')" id="overtimeDetail">Detail</button>';
+            return '<button class="btn-warning w-100 btn" onclick="editOvertime('."'".$row->pivot->date."'".', '.$row->pivot->overtime_id.', '.$row->pivot->hour.', '.$row->pivot->id.')" type="button" id="inputOvertime" data-bs-toggle="modal" data-bs-target="#inputPresenceOvertime">Edit</button>';    
+        })
         ->addIndexColumn()
         ->make(true);
     }
@@ -154,9 +158,10 @@ class OvertimeController extends Controller
         // dd(Carbon::parse($request->tanggal));
 
             $employee = Employee::where('user_id', auth()->user()->id)->first();
-            $presence = Presence::where('employee_id', $employee->id)->whereDate('created_at', $request->tanggal)->first();
+            $presence = Presence::where('employee_id', $employee->id)->whereDate('date', $request->tanggal)->first();
             $overtime = Overtime::find($request->lemburan);
         
+            // dd($request->tanggal);
             
         // Pengecekan apakah jam lembur lebih dari 5 jam
         $extra_duration = 0;
@@ -166,6 +171,7 @@ class OvertimeController extends Controller
             }
             // dd($extra_duration);
         // Akhir pengecekan jam lembur
+        
 
         // dd($extra_duration + $total_duration);
 
@@ -217,12 +223,28 @@ class OvertimeController extends Controller
         $check = $employee->overtimes()->where('date' , $request->tanggal)->where('employee_id', $employee->id)->get();
         if (count($check) > 0) {
             return redirect('/lemburan/absen')->with('failed', 'Anda sudah melakukan absen lemburan hari ini');
-        } elseif (!$presence) {
-            return redirect('/lemburan/absen')->with('failed', 'Anda harus melakukan absen hadir sebelum melakukan absen lembur!');
+        } 
+
+        // if ($employee->salary_method === "Harian") {
+            if (!$presence) {
+                return redirect('/lemburan/absen')->with('failed', 'Anda harus melakukan absen hadir sebelum melakukan absen lembur!');
+            }
+        // }
+
+        if ($employee->salary_method === "Bulanan") {
+           $gaji_harian = $employee->daily_salary / 25;
+        } else {
+            $gaji_harian = $employee->daily_salary;
         }
 
         $salary = 0;
 
+        // Pengecekan apakah jam lembur melebihi 16 jam
+            if ($total_duration + $extra_duration > 16) {
+                $salary += $gaji_harian;
+            }
+        // akhir pengecekan jam lembur lebih dari 16 jam
+        // dd($salary);
         if (!$hari_raya) {
             if ($hari_besar) {
                 if ($extra_duration < 1) {
@@ -248,13 +270,163 @@ class OvertimeController extends Controller
             $salary += $bonus_hariRaya * $total_duration;
         } 
 
-        // dd($salary);
+        
 
         $employee->overtimes()->attach($request->lemburan, ['date' => $request->tanggal, 'hour' => $extra_duration + $total_duration, 'salary' => $salary]);
 
         return redirect('/lemburan/absen')->with('success', 'Anda berhasil mengisi absen lemburan hari ini');
 
     } 
+
+    public function presence_update(Request $request, $id)
+    {
+        $this->validate($request, [
+            'tanggal' => 'required',
+            'lemburan' => 'required',
+            'from_time' => 'required|numeric|min:1',
+        ],[
+            'tanggal.required' => 'Tanggal wajib diisi!',
+            'lemburan.required' => 'Menu pilih lemburan wajib diisi!',
+            'from_time.required' => 'Jam lembur wajib diisi!',
+            'from_time.numeric' => 'Harap Masukkan dengan format angka!',
+            'from_time.min' => 'Harap Masukkan jam minimal 1!',
+        ]);
+
+        // $startTime = Carbon::parse($request->from_time);
+        // $finishTime = carbon::parse($request->to_time);
+        $total_duration = $request->from_time;
+        $checkDate = Carbon::parse($request->tanggal)->format('Y-m-j');
+        $today = Carbon::parse($request->tanggal)->format('D');
+        // dd(Carbon::parse($request->tanggal));
+
+            $employee = Employee::where('user_id', auth()->user()->id)->first();
+            $presence = Presence::where('employee_id', $employee->id)->whereDate('date', $request->tanggal)->first();
+            $overtime = Overtime::find($request->lemburan);
+        
+            // dd($request->tanggal);
+            
+        // Pengecekan apakah jam lembur lebih dari 5 jam
+        $extra_duration = 0;
+            if ($total_duration > 5) {
+                $extra_duration = $total_duration - 5;
+                $total_duration -= $extra_duration;
+            }
+            // dd($extra_duration);
+        // Akhir pengecekan jam lembur
+        
+
+        // dd($extra_duration + $total_duration);
+
+        // Pengambilan API tanggal merah dan API tahun hijriyah
+            $liburan = file_get_contents("https://api-harilibur.vercel.app/api");
+            $hari_libur = json_decode($liburan, true);
+            $hijriyah = Hijri::date('Y');
+        // Akhir pengambilan API tanggal merah dan API tahun hijriyah  
+        
+        $libur_nasional = [];
+        $tanggal_merah = [];
+        foreach ($hari_libur as $libur) {
+            if ($libur['is_national_holiday'])   {
+                $tanggal_merah[] = $libur['holiday_date'];
+                $push['tanggal'] = $libur['holiday_date'];
+                $push['nama'] = $libur['holiday_name'];
+                array_push($libur_nasional, $push);
+            } 
+        }
+
+        // Pengecekan Hari Raya Idul-fitri dan Idul Adha    
+            $holiday_name = array_column($libur_nasional, 'nama');
+            // dd($holiday_name);
+            $found_key_fitri = array_search('Hari Raya Idul Fitri ' . $hijriyah . ' Hijriyah', $holiday_name);
+            $found_key_adha = array_search('Hari Raya Idul Adha ' . $hijriyah . ' Hijriyah', $holiday_name);
+
+            $tanggal_adha = $libur_nasional[$found_key_adha];
+            $tanggal_fitri = $libur_nasional[$found_key_fitri+1];
+
+            if (in_array($checkDate, $tanggal_fitri)) {
+                $hari_raya = true;
+            } elseif (in_array($checkDate, $tanggal_adha)) {
+                $hari_raya = true;
+            } else {
+                $hari_raya = false;
+            }
+        // Akhir pengecekan Hari Raya Idul-fitri dan Idul Adha 
+
+        // Pengecekan libur hari minggu dan hari besar
+             if ($today === "Sun") {
+                $hari_besar = true;
+            } elseif (in_array($checkDate, $tanggal_merah)) {
+                $hari_besar = true;
+            } else {
+                $hari_besar = false;
+            }
+        // Akhir pengecekan libur hari minggu dan hari besar  
+
+        $check = $employee->overtimes()->where('date' , $request->tanggal)->where('employee_id', $employee->id)->get();
+        if (count($check) > 1) {
+            return redirect('/lemburan/absen')->with('failed', 'Terlalu banyak tanggal yang sama');
+        } 
+
+        // if ($employee->salary_method === "Harian") {
+            if (!$presence) {
+                return redirect('/lemburan/absen')->with('failed', 'Anda harus melakukan absen hadir sebelum melakukan absen lembur!');
+            }
+        // }
+
+        if ($employee->salary_method === "Bulanan") {
+           $gaji_harian = $employee->daily_salary / 25;
+        } else {
+            $gaji_harian = $employee->daily_salary;
+        }
+
+        $salary = 0;
+
+        // Pengecekan apakah jam lembur melebihi 16 jam
+            if ($total_duration + $extra_duration > 16) {
+                $salary += $gaji_harian;
+            }
+        // akhir pengecekan jam lembur lebih dari 16 jam
+        // dd($salary);
+        if (!$hari_raya) {
+            if ($hari_besar) {
+                if ($extra_duration < 1) {
+                    $bonus_hariBesar = $overtime->per_hour * 2;   
+                    $salary += $bonus_hariBesar * $total_duration;
+                } elseif ($extra_duration > 0) {
+                    $bonus_hariBesar = $overtime->per_hour * 2;   
+                    $salary += $bonus_hariBesar * $total_duration;
+                    $bonus_hariBesarExtra = $overtime->per_hour * 3;
+                    $salary += $bonus_hariBesarExtra * $extra_duration;
+                }
+            } else {
+                if ($extra_duration < 1) {
+                    $salary += $overtime->per_hour * $total_duration;
+                } elseif ($extra_duration > 0) {
+                    $salary += $overtime->per_hour * $total_duration;
+                    $bonus = $overtime->per_hour * 2;
+                    $salary += $bonus * $extra_duration;
+                }
+            }
+        } elseif ($hari_raya) {
+            $bonus_hariRaya = $overtime->per_hour * 3;
+            $salary += $bonus_hariRaya * $total_duration;
+        } 
+
+        // dd($employee_overtime);
+
+        $employee_overtime = Employee_overtime::find($id);
+        $employee_overtime->employee_id = $employee->id;
+        $employee_overtime->overtime_id = $request->lemburan;
+        $employee_overtime->date = $request->tanggal;
+        $employee_overtime->hour = $request->from_time;
+        $employee_overtime->salary = $salary;
+        // dd($employee_overtime);
+        $employee_overtime->save();
+
+        // $employee->overtimes()->attach($request->lemburan, ['date' => $request->tanggal, 'hour' => $extra_duration + $total_duration, 'salary' => $salary]);
+
+        return redirect('/lemburan/absen')->with('success', 'Anda berhasil mengedit absen lemburan');
+    }
 
     public function update(Request $request, $id)
     {

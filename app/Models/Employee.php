@@ -20,7 +20,7 @@ class Employee extends Model
 
     public function overtimes()
     {
-        return $this->belongsToMany(Overtime::class)->withPivot(['date', 'hour', 'salary']);
+        return $this->belongsToMany(Overtime::class)->withPivot(['id', 'date', 'hour', 'salary']);
     }
 
 }

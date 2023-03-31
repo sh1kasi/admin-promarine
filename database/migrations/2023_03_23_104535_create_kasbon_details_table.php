@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateKasbonsTable extends Migration
+class CreateKasbonDetailsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class CreateKasbonsTable extends Migration
      */
     public function up()
     {
-        Schema::create('kasbons', function (Blueprint $table) {
+        Schema::create('kasbon_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->references('id')->on('employees');
-            $table->bigInteger('nominal');
-            $table->string('job');
-            $table->text('description')->nullable();
-            $table->enum('status', ['success', 'pending', 'rejected']);
+            $table->foreignId('kasbon_id')->references('id')->on('kasbons');
             $table->date('date');
+            $table->string('item');
+            $table->bigInteger('nominal');
             $table->timestamps();
         });
     }
@@ -32,6 +30,6 @@ class CreateKasbonsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('kasbons');
+        Schema::dropIfExists('kasbon_details');
     }
 }

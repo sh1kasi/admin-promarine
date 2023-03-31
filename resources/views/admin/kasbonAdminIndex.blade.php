@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="page-content">
-    <div class="main-wrapper">
+    {{-- <div class="main-wrapper">
         <div class="row">
             <div class="col">
                 <div class="card">
@@ -11,26 +11,28 @@
                         <div class="filter row col-md">
                             <div class="d-flex justify-content-between input-daterange mb-4">
                                 <div class="from_date d-flex w-50">                              
-                                    <span style="font-size: 12px;">Dari tanggal: </span>
+                                    <span style="font-size: 10px;">Dari tanggal: </span>
                                     <input type="text" class="form-control mb-3" name="from" value="" id="from_date">
                                 </div>
                                 <div class="to_date d-flex ms-2 w-50">
-                                    <span style="font-size: 12px;" class="ms-4">Hingga tanggal: </span>
+                                    <span style="font-size: 10px;" class="ms-4">Hingga tanggal: </span>
                                     <input type="text" class="form-control mb-3" name="to" value="" id="to_date">
                                 </div>
                             </div>
                             <div class="specific-filter row d-flex justify-content-between">
                                 <div class="name-filter w-50">
-                                    <span style="font-size: 12px;">Pilih Nama Pegawai</span>
+                                    <span style="font-size: 10px;">Pilih Nama Pegawai</span>
                                     <select class="form-control" id="select_employee">
-                                        @foreach ($kasbon as $data)
+                                        <option value="" selected>Pilih Pegawai yang akan difilter</option>
+                                        @foreach ($kasbon_employee as $data)
                                             <option value="{{ $data->employee_id }}">{{ Str::ucfirst($data->employees->users->name) }}</option>
                                         @endforeach    
                                     </select>
                                 </div>
                                 <div class="status-filter w-50">
-                                    <span style="font-size: 12px;">Pilih Status Kasbon</span>
+                                    <span style="font-size: 10px;">Pilih Status Kasbon</span>
                                     <select class="form-control" id="select_status">
+                                            <option value="" selected>Pilih Status Kasbon</option>
                                             <option value="success">Selesai</option>
                                             <option value="pending">Menunggu</option>
                                             <option value="rejected">Ditolak</option>
@@ -46,7 +48,7 @@
                 </div>      
             </div>
         </div>
-    </div>
+    </div> --}}
 </div>
 <div class="page-content mt-0">
     <div class="main-wrapper">
@@ -61,8 +63,10 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Nama Pegawai</th>
+                                    <th>JOB</th>
                                     <th>Tanggal</th>
                                     <th>Nominal Kasbon</th>
+                                    <th>Bukti Foto</th>
                                     <th>Status</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -74,6 +78,23 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="pengki" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Bukti Foto</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <img id="imageDetail" class="img-fluid" src="" alt="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
     $(document).ready(function () {
@@ -97,25 +118,25 @@
             var from_date = $("#from_date").val();
             var to_date = $("#to_date").val();
             var employee_id = $("#select_employee").val();
-            var status = $("#status").val();
-            if (from_date != '' && to_date != '') {
-                $("#employeeTable").DataTable().destroy();
-                load_data(from_date, to_date);
+            var status = $("#select_status").val();
+            if (from_date != '' && to_date != '' || employee_id != '' || status != '') {
+                $("#kasbonTable").DataTable().destroy();
+                load_data(from_date, to_date, employee_id, status);
             } else {
                  toastr.error("Harap isi minimal 1 filter!");
             }
-            if (employee_id != '') {
-                $("#employeeTable").DataTable().destroy();
-                load_data(employee_id)
-            } else {
-                toastr.error("Harap isi minimal 1 filter!")
-            }
-            if (status != '') {
-                $("#employeeTable").DataTable().destroy();
-                load_data(status)
-            } else {
-                toastr.error("Harap isi minimal 1 filter!")
-            }
+            // if (employee_id != '') {
+            //     $("#employeeTable").DataTable().destroy();
+            //     load_data(employee_id, from_date, to_date)
+            // } else {
+            //     toastr.error("Harap isi minimal 1 filter!")
+            // }
+            // if (status != '') {
+            //     $("#employeeTable").DataTable().destroy();
+            //     load_data(status, employee_id, from_date,)
+            // } else {
+            //     toastr.error("Harap isi minimal 1 filter!")
+            // }
         });
 
         $("#refresh").click(function (e) { 
@@ -124,7 +145,7 @@
             $("#to_date").val('');
             $("#select_employee").val('');
             $("#status").val('');
-            $("#employeeTable").DataTable().destroy();
+            $("#kasbonTable").DataTable().destroy();
             load_data();
         });
 
@@ -147,8 +168,10 @@
                     columns: [
                         {data: 'DT_RowIndex', name: '#'},
                         {data: 'name', name: 'name'},
+                        {data: 'job', name: 'job'},
                         {data: 'date', name: 'date'},
                         {data: 'nominal', name: 'nominal', render: $.fn.dataTable.render.number( '.', ',', 0, 'Rp ' )},
+                        {data: 'foto', name: 'foto'},
                         {data: 'status', name: 'status'},
                         {data: 'action', name: 'action'},
                     ],
@@ -172,6 +195,10 @@
         }
     });
 
+    function detailImage(photo) {
+        $("#imageDetail").attr('src', photo);
+        $("#pengki").modal('show');
+    }
 
     function complete(id) {
 

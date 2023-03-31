@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use PDF;
 use Validator;
 use Carbon\Carbon;
 use App\Models\User;
 use Grei\TanggalMerah;
 use App\Models\Employee;
 use App\Models\Presence;
-use PDF;
 use Illuminate\Http\Request;
 use App\Models\Employee_overtime;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -42,7 +43,11 @@ class EmployeeController extends Controller
         $employee = Employee::get();
         return DataTables($employee)
         ->addColumn('name', function ($row) {
-            return ucfirst($row->users->name);
+            if ($row->call_name != null) {
+                return $row->call_name;
+            } else {
+                return ucfirst($row->users->name);
+            }
         })
         ->addColumn('action', function ($row) {
             return '<a class="btn btn-primary" type="button" href="/pegawai/detail/'.$row->id.'" id="employeeDetail"><i class="fa fa-xl fa-circle-info"></i></a>
@@ -74,6 +79,7 @@ class EmployeeController extends Controller
 
         $employee = new Employee;
         $employee->user_id = $request->user_id;
+        $employee->call_name = $request->call_name;
         $employee->role = $request->role;
         $employee->salary_method = $request->salary_method;
         $employee->daily_salary = str_replace(".","",$request->daily_salary);
@@ -82,28 +88,40 @@ class EmployeeController extends Controller
         return back()->with('success', 'Berhasil Menambahkan pegawai!');
     }
 
+    public function edit($id, Request $request)
+    {
+        $employee = Employee::find($id);
+        // dd($employee);
+
+        return response()->json([
+            'employee' => $employee,
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
         $employee = Employee::find($id);
+        // dd($ca);
         
         $this->validate($request, [
-            'user_id' => 'required',
+            // 'user_id' => 'required',
             'role' => 'required',
             'salary_method' => 'required',
             'daily_salary' => 'required',
         ],
         [
-            'user_id.required' => 'Wajib mengisi akun pegawai!',
-            'user_id.unique' => 'Pegawai tersebut sudah ada!',
+            // 'user_id.required' => 'Wajib mengisi akun pegawai!',
             'role.required' => 'Wajib mengisi role pegawai!',
             'salary_method.required' => 'Wajib mengisi metode gajian!',
             'daily_salary.required' => 'Wajib mengisi nominal gaji pegawai!',
         ]);
 
-        $employee->user_id = $request->user_id;
+        // $employee->user_id = $request->user_id;
+        $employee->call_name = $request->call_name;
         $employee->role = $request->role;
         $employee->salary_method = $request->salary_method;
         $employee->daily_salary = str_replace(".","",$request->daily_salary);
+        // dd($employee);
         $employee->save();
 
         return back()->with('success', 'Berhasil Mengedit Pegawai!');
@@ -126,7 +144,7 @@ class EmployeeController extends Controller
         return view('admin.employeeDetailIndex', compact('employee', 'id'));
     }
     
-    public function data_detail(Request $request, $id)
+    public function data_detail_harian(Request $request, $id)
     {
         // $id = $id;
         function rp($angka)
@@ -140,13 +158,14 @@ class EmployeeController extends Controller
         if ($request->ajax()) {
             if (!empty($request->from_date)) {
                 if ($request->from_date === $request->to_date) {
-                    $presence = Presence::where('employee_id', $id)->where('date', $request->from_date)->get();
+                    $presence = Presence::where('employee_id', $id)->where('date', $request->from_date)->orderBy('date', 'ASC')->get();
                 } else {
                     $presence = Presence::where('employee_id', $id)->where('date', '>=', $request->from_date)
+                                                              ->orderBy('date', 'ASC')
                                                               ->where('date', '<=', $request->to_date)->get();
                 }
             } else {
-                $presence = Presence::where('employee_id', $id)->get();
+                $presence = Presence::where('employee_id', $id)->orderBy('date', 'ASC')->get();
             }
         }       
 
@@ -154,7 +173,16 @@ class EmployeeController extends Controller
 
         // $presence = Presence::where('employee_id', $id)->get();
         $employee = Employee::find($id);
+        $lookup = [0, 50000, 75000, ($employee->daily_salary / 25) * 3];
+        $traveling = 0;
+        $minggu = 0;
+
+
         return DataTables($presence)
+        ->addColumn('date', function ($row) {
+            $date = Carbon::parse($row->date);
+            return $date->translatedFormat('l, j F Y');
+        })
         ->addColumn('area', function ($row) {
             if ($row->area == 1) {
                 return "Area Gerbang Kertasusila";
@@ -175,13 +203,84 @@ class EmployeeController extends Controller
                 return $employee_overtime->overtimes->name . ' (' . $employee_overtime->hour . ' Jam - ' . rp($employee_overtime->salary)  . ')';
             }
         }) 
-        ->addColumn('total_salary', function($row) {
+        ->addColumn('total_salary', function($row) use($employee, $lookup, $traveling, $minggu) {
             // $employee
             $employee_overtime = Employee_overtime::where('date', $row->date)->where('employee_id', $row->employee_id)->first();
-            return $row->salary + $employee_overtime?->salary;
+            $day = Carbon::parse($row->date)->format("D");
+
+            if ($day === "Sun") {
+                $minggu += ($employee->daily_salary / 25) * 2;
+            }
+
+            $traveling += $lookup[$row->area - 1];
+            $total_salary = $traveling + $employee_overtime?->salary + $minggu;
+
+            if ($employee->salary_method === "Harian") {
+                return $row->salary + $employee_overtime?->salary;
+            } else {
+                return $total_salary;
+            }
+            
+
         })
         ->addIndexColumn()
         ->make(true);
+    }
+
+    public function data_detail_bulanan(Request $request, $id)
+    {
+        function rupe($angka)
+        {
+            $hasil_rupiah = "Rp " . number_format($angka,0,',','.');
+            return $hasil_rupiah;
+        }
+
+        $presence = Presence::where('employee_id', $id)->orderBy('date', 'ASC')->get();
+        $employee_overtime = Employee_overtime::where('employee_id', $id)->orderBy('date', 'ASC')->get();
+
+        $data = DB::table('employees')
+                ->join('presences', 'employees.id', '=', 'presences.employee_id')
+                ->join('employee_overtime', 'employees.id', '=', 'employee_overtime.employee_id')
+                ->select('employees.daily_salary', 'presences.date AS presence_date', 'presences.area', 'employee_overtime.date AS overtime_date',
+                         'employee_overtime.hour', 'employee_overtime.salary')
+                ->where('employees.id', $id)
+                ->get();
+
+        dd($data);
+
+        return Datatables($data)
+        ->addColumn('date', function ($row) {
+            if (isset($row->presence_date)) {
+                return $row->presence_date;
+            } else {
+                $row->overtime_date;
+            }
+        })
+        ->addColumn('area', function($row) {
+                if ($row->area == 1) {
+                    return "Area Gerbang Kertasusila";
+                } elseif ($row->area == 2) {
+                    return "Area Pulau Jawa selain Gerbang Kertasusila";
+                } elseif ($row->area == 3) {
+                    return "Area Luar Pulau Jawa selain Bangkalan";
+                } elseif ($row->area == 4) {
+                    return "Offshore / Anchorage";
+                } else {
+                    return '-';
+                }
+
+        })
+        ->addColumn('overtime', function($row) {
+
+
+
+            return $row->hour;
+
+        })
+        ->escapeColumns([])
+        ->addIndexColumn()
+        ->make(true);
+
     }
 
     public function employee_detail_pdf(Request $request)
@@ -202,39 +301,79 @@ class EmployeeController extends Controller
         if (!empty($request->from_date)) {
             if ($request->from_date === $request->to_date) {
                 $presence = Presence::where('employee_id', $id)->where('date', $request->from_date)->get();
+                $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')
+                                                ->where('date', $request->from_date)->get();
+
             } else {
                 $presence = Presence::where('employee_id', $id)->where('date', '>=', $request->from_date)
                                                           ->where('date', '<=', $request->to_date)->get();
+                 $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')
+                 ->where('date', '>=', $request->from_date)
+                 ->where('date', '<=', $request->to_date)->get();
+
             }
         } else {
             $presence = Presence::where('employee_id', $id)->get();
+            $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')->get();
         }
 
         $presences = [];
+        $lookup = [0, 50000, 75000, ($employee->daily_salary / 25) * 3];
+        $totalTravel = 0;
+        $minggu = 0;
         foreach ($presence as $absen) {
 
-            if ($absen->status == 1) {
+            // $d2 = date('D', strtotime($absen['date']));
+            // if ($d2 === "Sun") {
+            //     print_r($d2);
+            // }
+
+            if ($absen->area == 1) {
                 $area = "Area Gerbang Kertasusila";
-            } elseif ($absen->status == 2) {
+            } elseif ($absen->area == 2) {
                 $area = "Area Pulau Jawa selain Gerbang Kertasusila";
-            } elseif ($absen->status == 3) {
+            } elseif ($absen->area == 3) {
                 $area = "Area Luar Pulau Jawa selain Bangkalan";
-            } elseif ($absen->status == 4) {
+            } elseif ($absen->area == 4) {
                 $area = "Offshore / Anchorage";
             }
 
+            $totalTravel += $lookup[$absen->area - 1];
+            $satuanTravel = $lookup[$absen->area - 1];
+
+            $day = Carbon::parse($absen->date)->format("D");
+            if ($day === "Sun") {
+                $minggu += ($employee->daily_salary / 25) * 2;
+            }
+
             $employee_overtime = Employee_overtime::where('date', $absen->date)->where('employee_id', $absen->employee_id)->first();
-
-
-            $push['date'] = $absen->date;
+            
+            
+            $push['date'] = Carbon::parse($absen->date)->translatedFormat('l, j F Y');
+            $push['day'] = $day;
             $push['area'] = $area;
             $push['overtime'] = is_null($employee_overtime) ? "-" : $employee_overtime->overtimes->name . ' (' . $employee_overtime->hour . ' Jam - ' . rupiah($employee_overtime->salary)  . ')';
-            $push['total_salary'] = $absen->salary + $employee_overtime?->salary;
+            $push['ot_salary'] = $employee_overtime?->salary;
+            $push['total_traveling'] = $totalTravel;
+            if ($employee->salary_method === "Harian") {
+                $push['total_salary'] = $absen->salary + $employee_overtime?->salary;
+            } else {
+                $push['total_salary'] = $employee_overtime?->salary + $satuanTravel;
+            }
             array_push($presences, $push);
         }
+
+        $total_minggu = 0;
+        if (in_array("Sun", array_column($presences, 'day'))) {
+            $total_minggu += array_count_values(array_column($presences, 'day'))['Sun'];
+        }
         
-        $tanggal_terlama = $presence->first()->created_at->format('Y-m-d');
-        $tanggal_terbaru = $presence->last()->created_at->format('Y-m-d');
+
+
+        
+        $tanggal_terlama = $presence->first()->date;
+        $tanggal_terbaru = $presence->last()->date;
+        // dd($tanggal_terbaru);
 
         view()->share([
             'from' => $from,
@@ -244,10 +383,12 @@ class EmployeeController extends Controller
             'employee' => $employee,
             'tanggal_terlama' => $tanggal_terlama,
             'tanggal_terbaru' => $tanggal_terbaru,
+            'total_traveling' => $totalTravel,
+            'total_minggu' => $total_minggu,
         ]);
 
         $pdf = PDF::loadview('admin.employeeDetailExportPDF');
-        return $pdf->download('Detail Gaji '. ucfirst($employee->users->name) . '.pdf');
+        return $pdf->stream('Detail Gaji '. ucfirst($employee->users->name) . '.pdf');
     }
 
 }

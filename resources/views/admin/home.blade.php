@@ -66,6 +66,11 @@
         toastr.success("{!! session('success') !!}");
     </script>
 @endif
+@if (Session::get('register'))
+    <script>
+        toastr.error("{!! session('register') !!}");
+    </script>
+@endif
 
     
 <script>

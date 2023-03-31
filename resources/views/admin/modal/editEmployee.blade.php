@@ -22,12 +22,12 @@
                     </div>
                     @endif --}}
     
-                    <div class="form-group">
+                    {{-- <div class="form-group">
                         <label for="user_id">Pilih akun Pegawai</label>
                         <select class="form-select @error('user_id') is-invalid @enderror" id="user_id" name="user_id" aria-label="Default select example">
                             <option selected class="text-muted" value="">Pilih akun yang telah terdaftar</option>
                             @foreach ($user as $data)
-                            <option value="{{ $data->id }}" {{ $employee->user_id == $data->id ? 'selected' : '' }} >{{ Str::ucfirst($data->name) }}</option>
+                            <option value="{{ $data->id }}">{{ Str::ucfirst($data->name) }}</option>
                             @endforeach
                         </select>
                         @error('user_id')     
@@ -35,13 +35,22 @@
                             {{ $message }}
                         </div>
                         @enderror
+                    </div> --}}
+                    <div class="form-group mt-3">
+                        <label for="call_name">Nama pegawai</label>
+                        <input type="text" id="call_name" name="call_name" value="{{ @old('call_name') }}" class="form-control @error('call_name') is-invalid @enderror w-75" placeholder="Masukkan Nama Pegawai"/>
+                    @error('call_name')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
                     </div>
                     <div class="form-group mt-3">
                         <label for="role">Pilih Role Pegawai</label>
                         <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" aria-label="Default select example">
                             <option selected value="">Pilih role pegawai</option>
-                            <option value="Permanent" {{ $employee->role == "Permanent" ? 'selected' : '' }} >Permanent</option>
-                            <option value="Helper" {{ $employee->role == "Helper" ? 'selected' : '' }}>Helper</option>
+                            <option value="Permanent">Permanent</option>
+                            <option value="Helper">Helper</option>
                         </select>
                         @error('role')
                             <div class="invalid-feedback">
@@ -52,9 +61,9 @@
                     <div class="form-group mt-3">
                         <label for="role">Pilih metode gajian</label>
                         <select class="form-select @error('salary_method') is-invalid @enderror" id="salary_method" name="salary_method" aria-label="Default select example">
-                            <option selected value="">Pilih metode gajian</option>
-                            <option value="harian" {{ $employee->salary_method == "harian" ? "selected" : "" }}>Harian</option>
-                            <option value="bulanan" {{ $employee->salary_method == "bulanan" ? "selected" : "" }}>Bulanan</option>
+                            <option selected    value="">Pilih metode gajian</option>
+                            <option value="Harian">Harian</option>
+                            <option value="Bulanan">Bulanan</option>
                         </select>
                         @error('salary_method')
                             <div class="invalid-feedback">
@@ -109,27 +118,33 @@
         }
 
         function employeeEdit(id) {
+            $("#editEmployee").attr('action', `/pegawai/update/${id}`);
+
             $(document).ready(function () {
         
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
 
-        $.ajax({
-            type: "get",
-            url: "",
-            data: {
-                id: id,
-            },
-            dataType: "json",
-            success: function (response) {
+                $.ajax({
+                    type: "post",
+                    url: `/pegawai/edit/${id}`,    
+                    data: {
+                        id: id,
+                    },
+                    dataType: "json",
+                    success: function (response) {
+                        $('input[name=call_name]').val(response.employee.call_name);
+                        $('select[name=role]').val(response.employee.role);
+                        $('select[name=salary_method]').val(response.employee.salary_method);
+                        $('input[name=daily_salary]').val(formatRibuan(response.employee.daily_salary));
 
-            }
-        });
+                    }
+                });
 
-    });
+            });
         }
     
     

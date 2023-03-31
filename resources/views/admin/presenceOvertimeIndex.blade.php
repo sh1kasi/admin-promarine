@@ -55,6 +55,7 @@
                                         <th>Nama Lemburan</th>
                                         <th>Jam lembur</th>
                                         <th>Bayaran</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -121,6 +122,7 @@
                     {data: 'overtime_name', name: 'overtime_name'},
                     {data: 'overtime_hour', name: 'overtime_hour'},
                     {data: 'salary', name: 'salary'},
+                    {data: 'action', name: 'action'},
                 ]
             });
         });
