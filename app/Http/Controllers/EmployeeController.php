@@ -300,20 +300,20 @@ class EmployeeController extends Controller
 
         if (!empty($request->from_date)) {
             if ($request->from_date === $request->to_date) {
-                $presence = Presence::where('employee_id', $id)->where('date', $request->from_date)->get();
+                $presence = Presence::where('employee_id', $id)->where('date', $request->from_date)->orderBy('date', 'ASC')->get();
                 $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')
                                                 ->where('date', $request->from_date)->get();
 
             } else {
                 $presence = Presence::where('employee_id', $id)->where('date', '>=', $request->from_date)
-                                                          ->where('date', '<=', $request->to_date)->get();
+                                                          ->where('date', '<=', $request->to_date)->orderBy('date', 'ASC')->get();
                  $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')
                  ->where('date', '>=', $request->from_date)
                  ->where('date', '<=', $request->to_date)->get();
 
             }
         } else {
-            $presence = Presence::where('employee_id', $id)->get();
+            $presence = Presence::where('employee_id', $id)->orderBy('date', 'ASC')->get();
             $presence_traveling = Presence::where('employee_id', $id)->where('area', '!=', '1')->get();
         }
 

@@ -35,7 +35,7 @@
                                             <th>Tanggal</th>
                                             <th>Area</th>
                                             <th>Lemburan</th>
-                                            <th>Total Lemburan / Uang Tambahan</th>
+                                            <th>{{ $employee->salary_method === "Bulanan" ? "Total Lemburan / Uang Tambahan" : "Total Sehari" }}</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -111,7 +111,7 @@
                   searching: true,
                   // scrollX: true,
                   scrollCollapse: true,
-                  destroy: true,3
+                  destroy: true,
                   ajax: {
                       type: "GET",
                       url: "/pegawai/harian/detail/json/"+id+"",

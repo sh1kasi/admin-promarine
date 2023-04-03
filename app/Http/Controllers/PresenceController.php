@@ -60,11 +60,11 @@ class PresenceController extends Controller
             // dd('b');
         } else {
             $employee = Employee::where('user_id', auth()->user()->id)->first();
-            // if ($employee != null) {
+            if ($employee != null) {
                 $presence = Presence::where('employee_id', $employee->id)->orderBy('date', 'ASC')->get();
-            // } else {
-            //     $presence = Presence::get();
-            // }
+            }  else {
+                $presence = Presence::get();
+            }
             // dd('a');
             // dd($employee);
         }

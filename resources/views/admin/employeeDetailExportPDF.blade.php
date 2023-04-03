@@ -115,12 +115,18 @@
                 <td class="table-primary" style="text-align: center">Minggu : {{ $total_minggu }}x</td>
                 <td class="table-primary" style="text-align: center">@currency(($employee->daily_salary / 25) * 2 * $total_minggu)</td>
             </tr>
-            @endif
             <tr>
                 <td colspan="3" text-align="center"></td>
                 <td class="table-primary" style="text-align: center">Total: </td>
                 <td class="table-primary" style="text-align: center">@currency($employee->daily_salary + $ot_salary + $total_traveling + ($employee->daily_salary / 25) * 2 * $total_minggu)</td>
             </tr>
+            @else
+                <tr>
+                    <td colspan="3" text-align="center"></td>
+                    <td class="table-primary" style="text-align: center">Total: </td>
+                    <td class="table-primary" style="text-align: center">@currency($total)</td>
+                </tr>
+            @endif
         </tfoot>
     </table>
 

@@ -43,8 +43,7 @@
                     <div class="card login-box-container">
                         <div class="card-body">
                             <div class="authent-logo">
-                                {{-- <img src="{{ asset('custom-image') }}/LOGO PROMARINE.jpg" class="image-fluid" alt=""> --}}
-                                d
+                                <img src="{{ asset('custom-image') }}/LOGO PROMARINE.jpg" class="img-fluid" alt="">
                             </div>
                             <div class="authent-text">
                                 <p>Selamat Datang di Admin Promarine</p>

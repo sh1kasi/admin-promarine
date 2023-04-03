@@ -42,11 +42,11 @@
                     <div class="card login-box-container">
                         <div class="card-body">
                             <div class="authent-logo">
-                                <img src="{{ asset('template') }}/images/logo@2x.png" alt="">
+                                <img src="{{ asset('custom-image') }}/LOGO PROMARINE.jpg" class="img-fluid" alt="">
                             </div>
                             <div class="authent-text">
-                                <p>Welcome to Circl</p>
-                                <p>Enter your details to create your account</p>
+                                <p>Selamat Datang di Admin Promarine</p>
+                                <p>Masukkan data anda untuk pendaftaran</p>
                             </div>
 
                             <form action="/register/post" method="post">
